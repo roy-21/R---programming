@@ -1,0 +1,214 @@
+---
+title: "Exploring Retail Data : Data Science Project"
+author: "SOJIB CHANDRA ROY"
+format: html
+editor: visual
+---
+
+**1. Load tidyverse and read the csv file.**
+
+```{r}
+
+library(tidyverse)
+df <- read.csv('customer_data.csv')
+
+```
+
+**2. View the first 5 rows of the dataset to understand its structure.**
+
+```{r}
+
+df %>% 
+  slice_head(n = 5)
+
+```
+
+**3. How many rows and columns are in the dataset?**
+
+```{r}
+
+df %>% 
+  summarise(
+    total_rows = n(),
+    total_columns = ncol(.)
+  )
+
+```
+
+**4. Find the maximum, minimum, and mean age of the customers.**
+
+```{r}
+
+df %>%
+  summarise(
+    max_age = max(age, na.rm = TRUE),
+    min_age = min(age, na.rm = TRUE),
+    mean_age = mean(age, na.rm = TRUE)
+  )
+```
+
+**5. What are the three most common customer names?**
+
+```{r}
+
+df %>%
+  count(first, sort = TRUE) %>%
+  slice_max(n, n = 3)
+```
+
+**6. Identify the customers who have the same phone number.?**
+
+```{r}
+
+df %>%
+  group_by(phone) %>%
+  filter(n() > 1) %>%
+  arrange(phone)
+```
+
+**7. How many customers have the profession "Structural Engineer"?**
+
+```{r}
+
+df %>%
+  filter(profession == "Structural Engineer") %>%
+  summarise(count = n())
+```
+
+**8. How many male customers are Structural Engineers?**
+
+```{r}
+
+df %>%
+  filter(profession == "Structural Engineer", gender == "Male") %>%
+  summarise(count = n())
+```
+
+**9. Find the female Structural Engineers from the province of Alberta (AB)**
+
+```{r}
+
+
+df %>%
+  filter(profession == "Structural Engineer", gender == "Female", province == "AB")
+```
+
+**10. What is the maximum, minimum, and average spending amount?**
+
+```{r}
+
+df %>% 
+  summarise(
+    max_spending = max(price.CAD., na.rm = TRUE),
+    min_spending = min(price.CAD., na.rm = TRUE),
+    mean_spending = round(mean(price.CAD., na.rm = TRUE), 2)
+  ) %>% 
+  print()
+```
+
+**11. Who did not spend anything? Company wants to send a deal to encourage the customer to buy stuff!**
+
+```{r}
+
+df %>% 
+  filter(price.CAD. == 0) %>% 
+  select(first, last, company, profession, phone, province) %>% 
+  print()
+```
+
+**12. As a loyalty reward, company wants to send thanks coupon to those who spent 100CAD or more, please find out the customers?**
+
+```{r}
+
+df %>% 
+  filter(price.CAD. >= 100) %>% 
+  select(first, last, company, profession, phone, price.CAD.) %>% 
+  print()
+```
+
+**13. How many emails are associated with this credit card number '5020000000000230'?**
+
+```{r}
+
+df %>%
+  filter(cc_no == '5020000000000230') %>%
+  summarise(count = n())
+```
+
+**14. We need to send new cards to the customers well before the expire, how many cards are expiring in 2019?**
+
+```{r}
+
+# Use lubridate::ymd() to convert 'cc_exp' to Date type and filter for the year 2019
+# Try learning new things!!
+
+library(lubridate)
+
+df %>%
+  mutate(cc_exp_date = ymd(cc_exp)) %>%
+  filter(year(cc_exp_date) == 2019) %>%
+  summarise(count = n())
+```
+
+**15. How many people use Visa as their Credit Card Provider?**
+
+```{r}
+
+df %>%
+  filter(cc_type == "Visa") %>%
+  summarise(count = n())
+```
+
+**16. Can you find the customer who spent 100 CAD using Visa?**
+
+```{r}
+
+df %>% 
+  filter(price.CAD. == 100, cc_type == "Visa") %>% 
+  select(first, last, email, gender, age, company, profession, phone, price.CAD.) %>% 
+  print()
+```
+
+**17. What are two most common professions?**
+
+```{r}
+
+df %>%
+  count(profession, sort = TRUE) %>%
+  slice_max(n, n = 2)
+```
+
+**18. Can you tell the top 5 most popular email providers? (e.g. gmail.com, yahoo.com, etc...)**
+
+```{r}
+# use stringr::str_extract() to extract email providers
+# Try learning new things!!
+
+library(stringr)
+
+df %>%
+  mutate(email_provider = str_extract(email, "(?<=@)[^>]+")) %>%
+  count(email_provider, sort = TRUE) %>%
+  slice_max(n, n = 5)
+```
+
+**19. Is there any customer who is using email with "am.edu"?**
+
+```{r}
+# use stringr::str_detect() to find customers with "am.edu" in their email.
+
+df %>% 
+  filter(str_detect(email, "am\\.edu")) %>% 
+  select(first, last, email, gender, age) %>% 
+  print()
+```
+
+**20. Which day of the week, the store gets more customers?**
+
+```{r}
+# Convert the 'date' to Date type and extract the day of the week
+
+df %>%
+  count(weekday, sort = TRUE) %>%
+  slice_max(n, n = 1)
+```
